@@ -1,0 +1,14 @@
+name: Daily Cron Job
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Every day at midnight UTC
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run script
+        run: echo "Scheduled job ran at $(date -u)"
