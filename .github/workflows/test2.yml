@@ -2,7 +2,7 @@ name: HelloWorldTest2
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/10 * * * *'
 
 jobs:
   hello:
