@@ -1,0 +1,15 @@
+name: HelloWorldTest
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:        # allows manual trigger
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello World
+        run: |
+          echo "👋 Hello world! GitHub Actions is running. Timestamp: $(date)"
