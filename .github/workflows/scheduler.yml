@@ -1,26 +1,41 @@
 name: SignInAlerts
 
 on:
+  # Run once per hour at minute 0
   schedule:
-    - cron: '0 * * * *' # every hour at minute 0
-  workflow_dispatch: # allows manual trigger
+    - cron: '0 * * * *'
+  # Allow manual triggering
+  workflow_dispatch:
 
 jobs:
   run-alerts:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22'
 
+      # 3. Cache dependencies (optional, speeds up subsequent runs)
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 4. Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # 5. Run SignInAlerts
       - name: Run SignInAlerts
         run: node src/index.js
         env:

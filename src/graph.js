@@ -36,7 +36,7 @@ export async function getAccessToken() {
 export async function getRecentSignIns(token, startTimeIso) {
     // Apply 1-minute overlap to avoid missed logs
     const start = new Date(startTimeIso);
-    start.setMinutes(start.getMinutes() - 5);
+    start.setMinutes(start.getMinutes() - 1);
     start.setSeconds(0);
     start.setMilliseconds(0);
     const startStr = start.toISOString();
