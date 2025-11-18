@@ -1,17 +1,31 @@
-name: TestSignInAlerts
+name: SignInAlerts
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes
-  workflow_dispatch:        # manual trigger
+    - cron: '0 * * * *' # every hour at minute 0
+  workflow_dispatch: # allows manual trigger
 
 jobs:
-  test-run:
+  run-alerts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Test Echo
-        run: echo "✅ GitHub Actions is running! $(date)"
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run SignInAlerts
+        run: node src/index.js
+        env:
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          ALERT_EMAILS: ${{ secrets.ALERT_EMAILS }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
