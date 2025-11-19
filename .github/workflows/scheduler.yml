@@ -1,28 +1,28 @@
 name: SignInAlerts
 
 on:
-  # Run once per hour at minute 0
   schedule:
     - cron: '0 * * * *'
-  # Allow manual triggering
   workflow_dispatch:
 
 jobs:
   run-alerts:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write   # REQUIRED so GitHub Actions can commit the file
+
     steps:
-      # 1. Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22'
 
-      # 3. Cache dependencies (optional, speeds up subsequent runs)
       - name: Cache Node.js modules
         uses: actions/cache@v3
         with:
@@ -31,11 +31,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # 4. Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # 5. Run SignInAlerts
       - name: Run SignInAlerts
         run: node src/index.js
         env:
@@ -44,3 +42,11 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           ALERT_EMAILS: ${{ secrets.ALERT_EMAILS }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+
+      - name: Commit last-run timestamp
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add last-run.json
+          git commit -m "Update last-run timestamp" || echo "No changes to commit"
+          git push
