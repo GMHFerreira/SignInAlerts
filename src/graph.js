@@ -30,16 +30,32 @@ export async function getAccessToken() {
 /**
  * Query sign-in logs from Microsoft Graph
  * @param {string} token - Access token
- * @param {string} startTimeIso - ISO string of start time
+ * @param {string} startTimeIso - ISO string of last run time
  * @returns {Promise<Array>} - Array of sign-ins
  */
 export async function getRecentSignIns(token, startTimeIso) {
+
+    // ------------------------------------------------------------
+    // FIX: Prevent breakage if lastRun is in the future
+    // ------------------------------------------------------------
+    const now = Date.now();
+    let lastRun = new Date(startTimeIso);
+
+    // If lastRun is more than 2 minutes ahead of real time,
+    // reset it to "1 hour ago" so alerts can work again
+    if (lastRun.getTime() > now + 2 * 60 * 1000) {
+        console.warn(
+            `Warning: lastRun timestamp (${startTimeIso}) was in the future. Resetting to 1 hour ago.`
+        );
+        lastRun = new Date(now - 60 * 60 * 1000);
+    }
+
     // Apply 1-minute overlap to avoid missed logs
-    const start = new Date(startTimeIso);
-    start.setMinutes(start.getMinutes() - 1);
-    start.setSeconds(0);
-    start.setMilliseconds(0);
-    const startStr = start.toISOString();
+    lastRun.setMinutes(lastRun.getMinutes() - 1);
+    lastRun.setSeconds(0);
+    lastRun.setMilliseconds(0);
+
+    const startStr = lastRun.toISOString();
 
     // Build filter for suspicious sign-ins
     const filter = [
@@ -56,7 +72,10 @@ export async function getRecentSignIns(token, startTimeIso) {
     });
 
     if (!response.ok) {
-        throw new Error(`Graph API request failed: ${response.status} ${await response.text()}`);
+        const body = await response.text();
+        throw new Error(
+            `Graph API request failed: ${response.status}\n${body}`
+        );
     }
 
     const data = await response.json();
